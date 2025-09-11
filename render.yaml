@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: amex-pattern-analyzer
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amex-db
+          property: connectionString
+
+databases:
+  - name: amex-db
+    databaseName: amex_analyzer
+    plan: free
