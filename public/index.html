@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amex Card Usage Pattern Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #4CAF50;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            background: #f0f4ff;
+            border-color: #2196F3;
+        }
+        
+        .upload-section.dragover {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            transform: scale(1.02);
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .config-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196F3;
+        }
+        
+        .config-section h3 {
+            color: #2196F3;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .form-group {
+            display: inline-block;
+            margin-right: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 200px;
+        }
+        
+        .form-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+        
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .filter-controls-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196F3;
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .controls-row:last-child {
+            margin-bottom: 0;
+            justify-content: space-between;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .control-group select, .control-group input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        
+        .control-group select:focus, .control-group input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .stats-summary {
+            font-weight: 600;
+            color: #2196F3;
+            font-size: 1.1em;
+        }
+        
+        .filter-btn {
+            background: #2196F3;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #1976D2;
+        }
+        
+        .time-period-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .tab:hover {
+            color: #2196F3;
+        }
+        
+        .cards-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196F3;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .card-summary.has-anomalies {
+            border-left-color: #e74c3c;
+        }
+        
+        .card-summary.no-anomalies {
+            border-left-color: #4CAF50;
+        }
+        
+        .card-number {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .anomaly-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .anomaly-indicator.none {
+            background: #4CAF50;
+        }
+        
+        .anomalies-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-top: 30px;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .section-header h3 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .anomaly-card {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+        
+        .anomaly-card:hover {
+            background: #f8f9ff;
+        }
+        
+        .anomaly-card:last-child {
+            border-bottom: none;
+        }
+        
+        .anomaly-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .anomaly-details {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .anomaly-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .anomaly-type.frequency { background: #fff3cd; color: #856404; }
+        .anomaly-type.spending { background: #d1ecf1; color: #0c5460; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, #00D2FF, #3A7BD5);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Amex Card Usage Pattern Analyzer</h1>
+            <p>Detect spending pattern changes and usage anomalies across your business cards</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section" id="uploadSection">
+                <h2>Upload Amex CSV Statement</h2>
+                <p>Upload multiple months of data for better pattern analysis</p>
+                <input type="file" id="fileInput" accept=".csv" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+                <p><small>Supports: CSV files from Amex business accounts</small></p>
+            </div>
+            
+            <div class="config-section">
+                <h3>⚙️ Pattern Analysis Settings</h3>
+                <div class="form-group">
+                    <label>Frequency Change Sensitivity</label>
+                    <select id="frequencyThreshold">
+                        <option value="10">High Sensitivity (10%)</option>
+                        <option value="25">Medium Sensitivity (25%)</option>
+                        <option value="50" selected>Low Sensitivity (50%)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Spending Change Sensitivity</label>
+                    <select id="spendingThreshold">
+                        <option value="5">High Sensitivity (5%)</option>
+                        <option value="15" selected>Medium Sensitivity (15%)</option>
+                        <option value="25">Low Sensitivity (25%)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Minimum Baseline Period</label>
+                    <select id="baselinePeriod">
+                        <option value="2">2 weeks</option>
+                        <option value="3">3 weeks</option>
+                        <option value="4" selected>4 weeks</option>
+                        <option value="6">6 weeks</option>
+                        <option value="8">8 weeks</option>
+                    </select>
+                </div>
+                <p style="color: #666; margin-top: 10px;">
+                    <small>High sensitivity detects smaller changes but may create more alerts | 
+                    Low sensitivity only flags major pattern changes | 
+                    Baseline period determines minimum data needed for pattern analysis</small>
+                </p>
+            </div>
+            
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzePatterns()" disabled>
+                Analyze Card Patterns
+            </button>
+            
+            <div id="loadingDiv" class="loading hidden">
+                Analyzing card usage patterns...
+            </div>
+            
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="time-period-tabs">
+                    <button class="tab active" onclick="showPeriod('weekly')">Weekly View</button>
+                    <button class="tab" onclick="showPeriod('monthly')">Monthly View</button>
+                </div>
+                
+                <div class="filter-controls-section">
+                    <div class="controls-row">
+                        <div class="control-group">
+                            <label>Sort by:</label>
+                            <select id="sortBy" onchange="applySortAndFilter()">
+                                <option value="totalTransactions">Most Transactions</option>
+                                <option value="totalAmount">Highest Total Spending</option>
+                                <option value="avgWeeklyTransactions">Highest Weekly Activity</option>
+                                <option value="avgWeeklySpending">Highest Weekly Spending</option>
+                                <option value="avgMonthlyTransactions">Highest Monthly Activity</option>
+                                <option value="avgMonthlySpending">Highest Monthly Spending</option>
+                                <option value="anomaliesCount">Most Anomalies</option>
+                                <option value="cardNumber">Card Number</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Filter by Card:</label>
+                            <select id="filterByCard" onchange="applySortAndFilter()">
+                                <option value="all">All Cards</option>
+                                <!-- Card options will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Filter by Anomalies:</label>
+                            <select id="filterAnomalies" onchange="applySortAndFilter()">
+                                <option value="all">All Cards</option>
+                                <option value="withAnomalies">Cards with Anomalies</option>
+                                <option value="noAnomalies">Cards without Anomalies</option>
+                                <option value="highSeverity">High Severity Only</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Spending Range:</label>
+                            <input type="range" id="spendingRange" min="0" max="10000" step="100" value="0" oninput="updateSpendingLabel(); applySortAndFilter()">
+                            <span id="spendingLabel">$0+</span>
+                        </div>
+                    </div>
+                    
+                    <div class="controls-row">
+                        <div class="stats-summary">
+                            <span id="filteredCount">0</span> of <span id="totalCardsCount">0</span> cards shown
+                        </div>
+                        <button class="filter-btn" onclick="resetFilters()">Reset All Filters</button>
+                    </div>
+                </div>
+                
+                <div id="cardsOverview" class="cards-overview">
+                    <!-- Card summaries will be populated here -->
+                </div>
+                
+                <div class="anomalies-section" id="anomaliesSection">
+                    <div class="section-header">
+                        <h3>🚨 Pattern Anomalies Detected</h3>
+                        <button class="export-btn" onclick="exportAnomalies()">Export Anomalies</button>
+                        <button class="export-btn" onclick="exportCardSummary()">Export Card Summary</button>
+                    </div>
+                    <div id="anomaliesContent">
+                        <!-- Anomalies will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Disable console output to prevent automatic console opening
+        const originalConsole = window.console;
+        window.console = {
+            log: function() {},
+            warn: function() {},
+            error: function() {},
+            info: function() {},
+            debug: function() {}
+        };
+        
+        let csvData = [];
+        let cardPatterns = {};
+        let anomalies = [];
+        let currentPeriod = 'weekly';
+        
+        // File handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        
+        fileInput.addEventListener('change', handleFile);
+        
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile({ target: { files: [files[0]] }});
+            }
+        });
+        
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('loadingDiv').classList.remove('hidden');
+            
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                delimitersToGuess: [',', '\t', '|', ';'],
+                complete: function(results) {
+                    if (results.errors.length > 0) {
+                        alert('Error parsing CSV: ' + results.errors[0].message);
+                        document.getElementById('loadingDiv').classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Clean headers by removing whitespace
+                    const cleanedData = results.data.map(row => {
+                        const cleanedRow = {};
+                        for (let key in row) {
+                            const cleanKey = key.trim();
+                            cleanedRow[cleanKey] = row[key];
+                        }
+                        return cleanedRow;
+                    });
+                    
+                    csvData = cleanedData;
+                    console.log('CSV Headers:', Object.keys(csvData[0] || {}));
+                    console.log('Sample transaction:', csvData[0]);
+                    
+                    analyzeBtn.disabled = false;
+                    document.getElementById('loadingDiv').classList.add('hidden');
+                    
+                    // Update upload section
+                    const dateRange = getDateRange(csvData);
+                    const uniqueCards = getUniqueCardCount(csvData);
+                    uploadSection.innerHTML = `
+                        <h2>✅ File Loaded: ${file.name}</h2>
+                        <p>${csvData.length} transactions from ${dateRange.start} to ${dateRange.end}</p>
+                        <p><strong>${uniqueCards} unique cards detected</strong></p>
+                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose Different File</button>
+                    `;
+                },
+                error: function(error) {
+                    alert('Error reading file: ' + error.message);
+                    document.getElementById('loadingDiv').classList.add('hidden');
+                }
+            });
+        }
+        
+        function getUniqueCardCount(data) {
+            const cards = new Set();
+            data.forEach(transaction => {
+                const cardNumber = transaction['Account #'] || 'Unknown';
+                cards.add(cardNumber);
+            });
+            return cards.size;
+        }
+        
+        function getDateRange(data) {
+            if (!data || data.length === 0) return { start: '', end: '' };
+            
+            const dates = data.map(row => new Date(row.Date)).filter(d => !isNaN(d));
+            if (dates.length === 0) return { start: '', end: '' };
+            
+            const minDate = new Date(Math.min(...dates));
+            const maxDate = new Date(Math.max(...dates));
+            
+            return {
+                start: minDate.toLocaleDateString(),
+                end: maxDate.toLocaleDateString()
+            };
+        }
+        
+        function analyzePatterns() {
+            if (!csvData || csvData.length === 0) {
+                alert('Please upload a CSV file first');
+                return;
+            }
+            
+            document.getElementById('loadingDiv').classList.remove('hidden');
+            cardPatterns = {};
+            anomalies = [];
+            
+            // Get configuration
+            const config = {
+                frequencyThreshold: parseInt(document.getElementById('frequencyThreshold').value),
+                spendingThreshold: parseInt(document.getElementById('spendingThreshold').value),
+                baselinePeriod: parseInt(document.getElementById('baselinePeriod').value)
+            };
+            
+            // Group transactions by card
+            const cardTransactions = {};
+            
+            csvData.forEach(transaction => {
+                const cardNumber = transaction['Account #'] || 'Unknown';
+                const date = new Date(transaction.Date);
+                const amount = Math.abs(parseFloat(transaction.Amount) || 0);
+                const description = transaction.Description || '';
+                
+                if (!cardTransactions[cardNumber]) {
+                    cardTransactions[cardNumber] = [];
+                }
+                
+                cardTransactions[cardNumber].push({
+                    date: date,
+                    amount: amount,
+                    description: description,
+                    originalData: transaction
+                });
+            });
+            
+            // Analyze each card's patterns
+            Object.keys(cardTransactions).forEach(cardNumber => {
+                const transactions = cardTransactions[cardNumber].sort((a, b) => a.date - b.date);
+                cardPatterns[cardNumber] = analyzeCardPattern(cardNumber, transactions, config);
+            });
+            
+            displayResults();
+            document.getElementById('loadingDiv').classList.add('hidden');
+        }
+        
+        function analyzeCardPattern(cardNumber, transactions, config) {
+            const pattern = {
+                cardNumber: cardNumber,
+                totalTransactions: transactions.length,
+                totalAmount: transactions.reduce((sum, t) => sum + t.amount, 0),
+                dateRange: {
+                    start: transactions[0]?.date,
+                    end: transactions[transactions.length - 1]?.date
+                },
+                weeklyData: {},
+                monthlyData: {},
+                dailyFrequency: {},
+                weeklySpending: {},
+                anomalies: []
+            };
+            
+            // Group by weeks and months
+            transactions.forEach(transaction => {
+                const date = transaction.date;
+                const weekKey = getWeekKey(date);
+                const monthKey = getMonthKey(date);
+                const dayKey = getDayKey(date);
+                
+                // Weekly data
+                if (!pattern.weeklyData[weekKey]) {
+                    pattern.weeklyData[weekKey] = { transactions: 0, amount: 0, dates: [] };
+                }
+                pattern.weeklyData[weekKey].transactions++;
+                pattern.weeklyData[weekKey].amount += transaction.amount;
+                pattern.weeklyData[weekKey].dates.push(date);
+                
+                // Monthly data
+                if (!pattern.monthlyData[monthKey]) {
+                    pattern.monthlyData[monthKey] = { transactions: 0, amount: 0 };
+                }
+                pattern.monthlyData[monthKey].transactions++;
+                pattern.monthlyData[monthKey].amount += transaction.amount;
+                
+                // Daily frequency
+                if (!pattern.dailyFrequency[dayKey]) {
+                    pattern.dailyFrequency[dayKey] = 0;
+                }
+                pattern.dailyFrequency[dayKey]++;
+                
+                // Weekly spending
+                if (!pattern.weeklySpending[weekKey]) {
+                    pattern.weeklySpending[weekKey] = 0;
+                }
+                pattern.weeklySpending[weekKey] += transaction.amount;
+            });
+            
+            // Calculate averages for baseline
+            const weeklyTransactionCounts = Object.values(pattern.weeklyData).map(w => w.transactions);
+            const weeklySpendingAmounts = Object.values(pattern.weeklySpending);
+            const dailyFrequencyCounts = Object.values(pattern.dailyFrequency);
+            
+            pattern.averages = {
+                weeklyTransactions: weeklyTransactionCounts.reduce((a, b) => a + b, 0) / weeklyTransactionCounts.length,
+                weeklySpending: weeklySpendingAmounts.reduce((a, b) => a + b, 0) / weeklySpendingAmounts.length,
+                dailyFrequency: dailyFrequencyCounts.reduce((a, b) => a + b, 0) / dailyFrequencyCounts.length
+            };
+            
+            // Detect anomalies if we have enough baseline data
+            const weeksOfData = Object.keys(pattern.weeklyData).length;
+            if (weeksOfData >= config.baselinePeriod) {
+                // Check for frequency anomalies (sudden changes in daily usage)
+                Object.keys(pattern.dailyFrequency).forEach(dayKey => {
+                    const dayCount = pattern.dailyFrequency[dayKey];
+                    const expectedCount = Math.round(pattern.averages.dailyFrequency);
+                    const changePercent = Math.abs((dayCount - expectedCount) / expectedCount * 100);
+                    
+                    if (changePercent > config.frequencyThreshold && dayCount > expectedCount) {
+                        pattern.anomalies.push({
+                            type: 'frequency',
+                            date: dayKey,
+                            message: `Unusual frequency: ${dayCount} transactions on ${dayKey} (average: ${expectedCount.toFixed(1)})`,
+                            severity: changePercent > config.frequencyThreshold * 2 ? 'high' : 'medium'
+                        });
+                    }
+                });
+                
+                // Check for spending anomalies (changes in weekly spending)
+                Object.keys(pattern.weeklySpending).forEach(weekKey => {
+                    const weekSpending = pattern.weeklySpending[weekKey];
+                    const expectedSpending = pattern.averages.weeklySpending;
+                    const changePercent = Math.abs((weekSpending - expectedSpending) / expectedSpending * 100);
+                    
+                    if (changePercent > config.spendingThreshold) {
+                        pattern.anomalies.push({
+                            type: 'spending',
+                            date: weekKey,
+                            message: `Spending anomaly: $${weekSpending.toFixed(2)} for week ${weekKey} (average: $${expectedSpending.toFixed(2)})`,
+                            severity: changePercent > config.spendingThreshold * 2 ? 'high' : 'medium'
+                        });
+                    }
+                });
+            }
+            
+            return pattern;
+        }
+        
+        function getWeekKey(date) {
+            const year = date.getFullYear();
+            const week = getWeekNumber(date);
+            return `${year}-W${week.toString().padStart(2, '0')}`;
+        }
+        
+        function getMonthKey(date) {
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        }
+        
+        function getDayKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
+        
+        function displayResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Store all card data for filtering
+            window.allCardData = Object.values(cardPatterns);
+            
+            // Populate card filter dropdown
+            populateCardFilter();
+            
+            // Initial display
+            applySortAndFilter();
+            
+            // Display anomalies
+            displayAnomalies();
+            
+            resultsSection.style.display = 'block';
+        }
+        
+        function populateCardFilter() {
+            const filterByCard = document.getElementById('filterByCard');
+            
+            // Clear existing options except "All Cards"
+            filterByCard.innerHTML = '<option value="all">All Cards</option>';
+            
+            // Add option for each card
+            window.allCardData.forEach(pattern => {
+                const lastFour = pattern.cardNumber.toString().slice(-4);
+                const option = document.createElement('option');
+                option.value = pattern.cardNumber;
+                option.textContent = `Card ****${lastFour}`;
+                filterByCard.appendChild(option);
+            });
+        }
+        
+        function applySortAndFilter() {
+            const sortBy = document.getElementById('sortBy').value;
+            const filterByCard = document.getElementById('filterByCard').value;
+            const filterAnomalies = document.getElementById('filterAnomalies').value;
+            const spendingThreshold = parseInt(document.getElementById('spendingRange').value);
+            
+            if (!window.allCardData) return;
+            
+            // Filter cards
+            let filteredCards = window.allCardData.filter(pattern => {
+                // Card filter
+                if (filterByCard !== 'all' && pattern.cardNumber !== filterByCard) {
+                    return false;
+                }
+                
+                // Anomalies filter
+                if (filterAnomalies !== 'all') {
+                    const hasAnomalies = pattern.anomalies.length > 0;
+                    const hasHighSeverity = pattern.anomalies.some(a => a.severity === 'high');
+                    
+                    if (filterAnomalies === 'withAnomalies' && !hasAnomalies) return false;
+                    if (filterAnomalies === 'noAnomalies' && hasAnomalies) return false;
+                    if (filterAnomalies === 'highSeverity' && !hasHighSeverity) return false;
+                }
+                
+                // Spending filter
+                if (pattern.totalAmount < spendingThreshold) return false;
+                
+                return true;
+            });
+            
+            // Sort cards
+            filteredCards.sort((a, b) => {
+                switch (sortBy) {
+                    case 'totalTransactions':
+                        return b.totalTransactions - a.totalTransactions;
+                    case 'totalAmount':
+                        return b.totalAmount - a.totalAmount;
+                    case 'avgWeeklyTransactions':
+                        const aWeeklyTrans = Object.keys(a.weeklyData).length > 0 ? a.totalTransactions / Object.keys(a.weeklyData).length : 0;
+                        const bWeeklyTrans = Object.keys(b.weeklyData).length > 0 ? b.totalTransactions / Object.keys(b.weeklyData).length : 0;
+                        return bWeeklyTrans - aWeeklyTrans;
+                    case 'avgWeeklySpending':
+                        const aWeeklySpend = Object.keys(a.weeklyData).length > 0 ? a.totalAmount / Object.keys(a.weeklyData).length : 0;
+                        const bWeeklySpend = Object.keys(b.weeklyData).length > 0 ? b.totalAmount / Object.keys(b.weeklyData).length : 0;
+                        return bWeeklySpend - aWeeklySpend;
+                    case 'avgMonthlyTransactions':
+                        const aMonthlyTrans = Object.keys(a.monthlyData).length > 0 ? a.totalTransactions / Object.keys(a.monthlyData).length : 0;
+                        const bMonthlyTrans = Object.keys(b.monthlyData).length > 0 ? b.totalTransactions / Object.keys(b.monthlyData).length : 0;
+                        return bMonthlyTrans - aMonthlyTrans;
+                    case 'avgMonthlySpending':
+                        const aMonthlySpend = Object.keys(a.monthlyData).length > 0 ? a.totalAmount / Object.keys(a.monthlyData).length : 0;
+                        const bMonthlySpend = Object.keys(b.monthlyData).length > 0 ? b.totalAmount / Object.keys(b.monthlyData).length : 0;
+                        return bMonthlySpend - aMonthlySpend;
+                    case 'anomaliesCount':
+                        return b.anomalies.length - a.anomalies.length;
+                    case 'cardNumber':
+                        return a.cardNumber.localeCompare(b.cardNumber);
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Display filtered and sorted cards
+            displayCards(filteredCards);
+            
+            // Update stats
+            document.getElementById('filteredCount').textContent = filteredCards.length;
+            document.getElementById('totalCardsCount').textContent = window.allCardData.length;
+        }
+        
+        function displayCards(cardsToShow) {
+            const cardsOverview = document.getElementById('cardsOverview');
+            
+            let cardHTML = '';
+            cardsToShow.forEach(pattern => {
+                const lastFour = pattern.cardNumber.toString().slice(-4);
+                const data = currentPeriod === 'weekly' ? pattern.weeklyData : pattern.monthlyData;
+                const periods = Object.keys(data).length;
+                const avgAmount = periods > 0 ? pattern.totalAmount / periods : 0;
+                const avgTransactions = periods > 0 ? pattern.totalTransactions / periods : 0;
+                
+                const hasAnomalies = pattern.anomalies.length > 0;
+                const hasHighSeverity = pattern.anomalies.some(a => a.severity === 'high');
+                const anomalyClass = hasAnomalies ? 'has-anomalies' : 'no-anomalies';
+                
+                cardHTML += `
+                    <div class="card-summary ${anomalyClass}">
+                        <div class="anomaly-indicator ${hasAnomalies ? (hasHighSeverity ? '' : 'medium') : 'none'}">
+                            ${hasAnomalies ? `${pattern.anomalies.length} Alert${pattern.anomalies.length > 1 ? 's' : ''}` : '✓ Clean'}
+                        </div>
+                        <div class="card-number">Card ****${lastFour}</div>
+                        <div class="card-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${pattern.totalTransactions}</div>
+                                <div class="stat-label">Total Transactions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${pattern.totalAmount.toFixed(0)}</div>
+                                <div class="stat-label">Total Amount</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${avgTransactions.toFixed(1)}</div>
+                                <div class="stat-label">Avg ${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)} Transactions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${avgAmount.toFixed(0)}</div>
+                                <div class="stat-label">Avg ${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)} Spending</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            cardsOverview.innerHTML = cardHTML;
+        }
+        
+        function displayAnomalies() {
+            const anomaliesContent = document.getElementById('anomaliesContent');
+            
+            let anomaliesHTML = '';
+            let totalAnomalies = 0;
+            
+            Object.values(cardPatterns).forEach(pattern => {
+                if (pattern.anomalies.length > 0) {
+                    totalAnomalies += pattern.anomalies.length;
+                    const lastFour = pattern.cardNumber.toString().slice(-4);
+                    
+                    pattern.anomalies.forEach(anomaly => {
+                        anomaliesHTML += `
+                            <div class="anomaly-card">
+                                <div class="anomaly-type ${anomaly.type}">${anomaly.type.toUpperCase()}</div>
+                                <div class="anomaly-title">Card ****${lastFour} - ${anomaly.severity.toUpperCase()} ALERT</div>
+                                <div class="anomaly-details">${anomaly.message}</div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+            
+            if (totalAnomalies === 0) {
+                anomaliesHTML = `
+                    <div style="padding: 40px; text-align: center; color: #4CAF50; font-size: 1.2em;">
+                        ✅ No pattern anomalies detected! All cards show consistent usage patterns.
+                    </div>
+                `;
+            }
+            
+            anomaliesContent.innerHTML = anomaliesHTML;
+        }
+        
+        function updateSpendingLabel() {
+            const value = document.getElementById('spendingRange').value;
+            document.getElementById('spendingLabel').textContent = `${value}+`;
+        }
+        
+        function resetFilters() {
+            document.getElementById('sortBy').value = 'totalTransactions';
+            selectAllCards(true);
+            document.getElementById('filterAnomalies').value = 'all';
+            document.getElementById('spendingRange').value = '0';
+            updateSpendingLabel();
+            applySortAndFilter();
+        }
+        
+        function showPeriod(period) {
+            currentPeriod = period;
+            
+            // Update tab active state
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Refresh display with current filters
+            applySortAndFilter();
+        }
+        
+        function exportAnomalies() {
+            const exportData = [];
+            Object.values(cardPatterns).forEach(pattern => {
+                const lastFour = pattern.cardNumber.toString().slice(-4);
+                pattern.anomalies.forEach(anomaly => {
+                    exportData.push({
+                        'Card': `****${lastFour}`,
+                        'Type': anomaly.type,
+                        'Severity': anomaly.severity,
+                        'Date': anomaly.date,
+                        'Details': anomaly.message
+                    });
+                });
+            });
+            
+            if (exportData.length === 0) {
+                alert('No anomalies to export');
+                return;
+            }
+            
+            const csv = Papa.unparse(exportData);
+            downloadCSV(csv, 'card-pattern-anomalies.csv');
+        }
+        
+        function exportCardSummary() {
+            const exportData = [];
+            Object.values(cardPatterns).forEach(pattern => {
+                const lastFour = pattern.cardNumber.toString().slice(-4);
+                const weeklyPeriods = Object.keys(pattern.weeklyData).length;
+                const monthlyPeriods = Object.keys(pattern.monthlyData).length;
+                
+                exportData.push({
+                    'Card': `****${lastFour}`,
+                    'Total Transactions': pattern.totalTransactions,
+                    'Total Amount': pattern.totalAmount.toFixed(2),
+                    'Weekly Periods': weeklyPeriods,
+                    'Monthly Periods': monthlyPeriods,
+                    'Avg Weekly Transactions': weeklyPeriods > 0 ? (pattern.totalTransactions / weeklyPeriods).toFixed(1) : 0,
+                    'Avg Weekly Spending': weeklyPeriods > 0 ? (pattern.totalAmount / weeklyPeriods).toFixed(2) : 0,
+                    'Avg Monthly Transactions': monthlyPeriods > 0 ? (pattern.totalTransactions / monthlyPeriods).toFixed(1) : 0,
+                    'Avg Monthly Spending': monthlyPeriods > 0 ? (pattern.totalAmount / monthlyPeriods).toFixed(2) : 0,
+                    'Anomalies Count': pattern.anomalies.length
+                });
+            });
+            
+            const csv = Papa.unparse(exportData);
+            downloadCSV(csv, 'card-usage-summary.csv');
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // Historical data management functions
+        function saveHistoricalData() {
+            const currentDate = new Date().toISOString().split('T')[0];
+            
+            // Update historical data with current analysis
+            Object.values(cardPatterns).forEach(pattern => {
+                if (!historicalData[pattern.cardNumber]) {
+                    historicalData[pattern.cardNumber] = {
+                        cardNumber: pattern.cardNumber,
+                        firstSeen: currentDate,
+                        analysisCount: 0,
+                        averages: pattern.averages,
+                        monthlyHistory: {},
+                        anomalyHistory: [],
+                        weeklyHistory: {}
+                    };
+                }
+                
+                const historical = historicalData[pattern.cardNumber];
+                historical.lastSeen = currentDate;
+                historical.analysisCount++;
+                
+                // Update rolling averages (weighted average with previous data)
+                const weight = Math.min(historical.analysisCount, 10) / 10; // Give more weight to recent data
+                historical.averages = {
+                    weeklyTransactions: (historical.averages.weeklyTransactions * (1 - weight)) + (pattern.averages.weeklyTransactions * weight),
+                    weeklySpending: (historical.averages.weeklySpending * (1 - weight)) + (pattern.averages.weeklySpending * weight),
+                    dailyFrequency: (historical.averages.dailyFrequency * (1 - weight)) + (pattern.averages.dailyFrequency * weight)
+                };
+                
+                // Store weekly data (will be cleaned up to 12 weeks)
+                Object.keys(pattern.weeklyData).forEach(weekKey => {
+                    historical.weeklyHistory[weekKey] = {
+                        transactions: pattern.weeklyData[weekKey].transactions,
+                        amount: pattern.weeklyData[weekKey].amount,
+                        date: currentDate
+                    };
+                });
+                
+                // Store monthly summary
+                const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+                historical.monthlyHistory[currentMonth] = {
+                    totalTransactions: pattern.totalTransactions,
+                    totalAmount: pattern.totalAmount,
+                    anomalyCount: pattern.anomalies.length,
+                    dateRange: pattern.dateRange
+                };
+                
+                // Store significant anomalies
+                pattern.anomalies.forEach(anomaly => {
+                    if (anomaly.severity === 'high') {
+                        historical.anomalyHistory.push({
+                            date: currentDate,
+                            type: anomaly.type,
+                            message: anomaly.message,
+                            severity: anomaly.severity
+                        });
+                    }
+                });
+            });
+            
+            // Clean up old data (keep only last 12 weeks)
+            cleanupOldData();
+            
+            // Auto-save to local storage
+            try {
+                localStorage.setItem('amexHistoricalData', JSON.stringify({
+                    lastUpdated: currentDate,
+                    version: '1.0',
+                    data: historicalData
+                }));
+            } catch (e) {
+                // Local storage not available or full
+            }
+        }
+        
+        function cleanupOldData() {
+            const twelveWeeksAgo = new Date();
+            twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - (12 * 7)); // 12 weeks ago
+            const cutoffDate = twelveWeeksAgo.toISOString().split('T')[0];
+            const cutoffWeek = getWeekKey(twelveWeeksAgo);
+            
+            Object.keys(historicalData).forEach(cardNumber => {
+                const historical = historicalData[cardNumber];
+                
+                // Clean weekly history - keep only last 12 weeks
+                if (historical.weeklyHistory) {
+                    Object.keys(historical.weeklyHistory).forEach(weekKey => {
+                        if (weekKey < cutoffWeek) {
+                            delete historical.weeklyHistory[weekKey];
+                        }
+                    });
+                }
+                
+                // Clean monthly history - keep only last 3 months (covers 12+ weeks)
+                if (historical.monthlyHistory) {
+                    const threeMonthsAgo = new Date();
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    const cutoffMonth = threeMonthsAgo.toISOString().substring(0, 7);
+                    
+                    Object.keys(historical.monthlyHistory).forEach(monthKey => {
+                        if (monthKey < cutoffMonth) {
+                            delete historical.monthlyHistory[monthKey];
+                        }
+                    });
+                }
+                
+                // Clean anomaly history - keep only last 12 weeks
+                if (historical.anomalyHistory) {
+                    historical.anomalyHistory = historical.anomalyHistory.filter(anomaly => 
+                        anomaly.date >= cutoffDate
+                    );
+                }
+                
+                // Update firstSeen if all data was cleaned up
+                if (historical.weeklyHistory && Object.keys(historical.weeklyHistory).length === 0) {
+                    historical.firstSeen = new Date().toISOString().split('T')[0];
+                }
+            });
+            
+            // Remove cards with no recent data (no activity in 12 weeks)
+            Object.keys(historicalData).forEach(cardNumber => {
+                const historical = historicalData[cardNumber];
+                if (historical.lastSeen < cutoffDate) {
+                    delete historicalData[cardNumber];
+                }
+            });
+        }
+        
+        function loadHistoricalData() {
+            try {
+                const saved = localStorage.getItem('amexHistoricalData');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    historicalData = parsed.data || {};
+                    
+                    // Show historical data indicator if available
+                    const cardCount = Object.keys(historicalData).length;
+                    if (cardCount > 0) {
+                        const indicator = document.createElement('div');
+                        indicator.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #4CAF50; color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; z-index: 1001;';
+                        indicator.textContent = `📊 ${cardCount} cards historical data loaded`;
+                        document.body.appendChild(indicator);
+                        setTimeout(() => indicator.remove(), 5000);
+                    }
+                }
+            } catch (e) {
+                historicalData = {};
+            }
+        }
+        
+        function exportHistoricalData() {
+            if (Object.keys(historicalData).length === 0) {
+                alert('No historical data to export. Process some transactions first.');
+                return;
+            }
+            
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                version: '1.0',
+                cardCount: Object.keys(historicalData).length,
+                data: historicalData
+            };
+            
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `amex-historical-data-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        function importHistoricalData() {
+            document.getElementById('historicalFileInput').click();
+        }
+        
+        function handleHistoricalImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (imported.data && typeof imported.data === 'object') {
+                        // Merge with existing data
+                        const existingCards = Object.keys(historicalData).length;
+                        
+                        Object.keys(imported.data).forEach(cardNumber => {
+                            if (!historicalData[cardNumber]) {
+                                historicalData[cardNumber] = imported.data[cardNumber];
+                            } else {
+                                // Merge historical data intelligently
+                                const existing = historicalData[cardNumber];
+                                const incoming = imported.data[cardNumber];
+                                
+                                existing.analysisCount = Math.max(existing.analysisCount, incoming.analysisCount);
+                                existing.firstSeen = existing.firstSeen < incoming.firstSeen ? existing.firstSeen : incoming.firstSeen;
+                                existing.lastSeen = existing.lastSeen > incoming.lastSeen ? existing.lastSeen : incoming.lastSeen;
+                                
+                                // Merge monthly history
+                                Object.assign(existing.monthlyHistory, incoming.monthlyHistory);
+                                
+                                // Merge anomaly history
+                                existing.anomalyHistory = [...existing.anomalyHistory, ...incoming.anomalyHistory]
+                                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                    .slice(-50); // Keep latest 50
+                            }
+                        });
+                        
+                        // Save merged data
+                        try {
+                            localStorage.setItem('amexHistoricalData', JSON.stringify({
+                                lastUpdated: new Date().toISOString().split('T')[0],
+                                version: '1.0',
+                                data: historicalData
+                            }));
+                        } catch (e) {
+                            // Local storage not available
+                        }
+                        
+                        const newCards = Object.keys(historicalData).length;
+                        alert(`Historical data imported successfully!\nCards before: ${existingCards}\nCards after: ${newCards}`);
+                        
+                    } else {
+                        alert('Invalid historical data file format.');
+                    }
+                    
+                } catch (error) {
+                    alert('Error importing historical data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+    </script>
+</body>
+</html>
