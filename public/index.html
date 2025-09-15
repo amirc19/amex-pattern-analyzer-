@@ -273,6 +273,12 @@
             border-left: 4px solid #2196F3;
             position: relative;
             transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card-summary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
         
         .card-summary.has-anomalies {
@@ -353,11 +359,14 @@
         .anomaly-card {
             padding: 20px;
             border-bottom: 1px solid #eee;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
         }
         
         .anomaly-card:hover {
             background: #f8f9ff;
+            transform: translateX(5px);
         }
         
         .anomaly-card:last-child {
@@ -387,6 +396,19 @@
         
         .anomaly-type.frequency { background: #fff3cd; color: #856404; }
         .anomaly-type.spending { background: #d1ecf1; color: #0c5460; }
+        .anomaly-type.non-fuel { background: #ffeaa7; color: #d63031; }
+        
+        .click-hint {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #2196F3;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
         
         .loading {
             text-align: center;
@@ -431,6 +453,231 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .transaction-filters {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .transaction-filters label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .transaction-filters select,
+        .transaction-filters input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .transactions-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .transactions-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .transactions-table tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .transaction-amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .transaction-date {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .anomaly-indicator-small {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        
+        .transaction-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+            color: #2196F3;
+        }
+        
+        .summary-card p {
+            margin: 0;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .card-detail-modal .modal-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+
+        .period-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .period-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196F3;
+        }
+
+        .period-card h4 {
+            color: #2196F3;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .period-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .period-stat {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+
+        .period-stat .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .period-stat .label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -462,9 +709,9 @@
                 <div class="form-group">
                     <label>Spending Change Sensitivity</label>
                     <select id="spendingThreshold">
-                        <option value="5">High Sensitivity (5%)</option>
-                        <option value="15" selected>Medium Sensitivity (15%)</option>
-                        <option value="25">Low Sensitivity (25%)</option>
+                        <option value="15">High Sensitivity (15%)</option>
+                        <option value="25" selected>Medium Sensitivity (25%)</option>
+                        <option value="50">Low Sensitivity (50%)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -529,6 +776,7 @@
                                 <option value="withAnomalies">Cards with Anomalies</option>
                                 <option value="noAnomalies">Cards without Anomalies</option>
                                 <option value="highSeverity">High Severity Only</option>
+                                <option value="nonFuel">Non-Fuel Purchases</option>
                             </select>
                         </div>
                         
@@ -554,6 +802,7 @@
                 <div class="anomalies-section" id="anomaliesSection">
                     <div class="section-header">
                         <h3>🚨 Pattern Anomalies Detected</h3>
+                        <p style="opacity: 0.9; margin-top: 5px;">Click on any anomaly to see the underlying transaction data</p>
                         <button class="export-btn" onclick="exportAnomalies()">Export Anomalies</button>
                         <button class="export-btn" onclick="exportCardSummary()">Export Card Summary</button>
                     </div>
@@ -565,21 +814,42 @@
         </div>
     </div>
 
+    <!-- Anomaly Detail Modal -->
+    <div id="anomalyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="anomalyModalTitle">Anomaly Details</h2>
+                <button class="close-btn" onclick="closeAnomalyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="anomalyModalContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Detail Modal -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header card-detail-modal">
+                <h2 id="cardModalTitle">Card Details</h2>
+                <button class="close-btn" onclick="closeCardModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="cardModalContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Disable console output to prevent automatic console opening
-        const originalConsole = window.console;
-        window.console = {
-            log: function() {},
-            warn: function() {},
-            error: function() {},
-            info: function() {},
-            debug: function() {}
-        };
-        
         let csvData = [];
         let cardPatterns = {};
         let anomalies = [];
         let currentPeriod = 'weekly';
+        let transactionsByCard = {};
         
         // File handling
         const fileInput = document.getElementById('fileInput');
@@ -606,6 +876,26 @@
                 handleFile({ target: { files: [files[0]] }});
             }
         });
+        
+        // Modal controls
+        window.onclick = function(event) {
+            const anomalyModal = document.getElementById('anomalyModal');
+            const cardModal = document.getElementById('cardModal');
+            if (event.target === anomalyModal) {
+                closeAnomalyModal();
+            }
+            if (event.target === cardModal) {
+                closeCardModal();
+            }
+        }
+        
+        function closeAnomalyModal() {
+            document.getElementById('anomalyModal').classList.remove('active');
+        }
+        
+        function closeCardModal() {
+            document.getElementById('cardModal').classList.remove('active');
+        }
         
         function handleFile(event) {
             const file = event.target.files[0];
@@ -636,9 +926,6 @@
                     });
                     
                     csvData = cleanedData;
-                    console.log('CSV Headers:', Object.keys(csvData[0] || {}));
-                    console.log('Sample transaction:', csvData[0]);
-                    
                     analyzeBtn.disabled = false;
                     document.getElementById('loadingDiv').classList.add('hidden');
                     
@@ -692,6 +979,7 @@
             document.getElementById('loadingDiv').classList.remove('hidden');
             cardPatterns = {};
             anomalies = [];
+            transactionsByCard = {};
             
             // Get configuration
             const config = {
@@ -713,13 +1001,18 @@
                     cardTransactions[cardNumber] = [];
                 }
                 
-                cardTransactions[cardNumber].push({
+                const transactionData = {
                     date: date,
                     amount: amount,
                     description: description,
                     originalData: transaction
-                });
+                };
+                
+                cardTransactions[cardNumber].push(transactionData);
             });
+            
+            // Store transactions by card for detailed views
+            transactionsByCard = cardTransactions;
             
             // Analyze each card's patterns
             Object.keys(cardTransactions).forEach(cardNumber => {
@@ -744,7 +1037,15 @@
                 monthlyData: {},
                 dailyFrequency: {},
                 weeklySpending: {},
-                anomalies: []
+                anomalies: [],
+                anomalyTransactions: {},
+                nonFuelTransactions: [],
+                fuelTransactions: [],
+                nonFuelStats: {
+                    count: 0,
+                    totalAmount: 0,
+                    percentage: 0
+                }
             };
             
             // Group by weeks and months
@@ -754,38 +1055,55 @@
                 const monthKey = getMonthKey(date);
                 const dayKey = getDayKey(date);
                 
+                // Check if transaction is fuel-related
+                const isFuelTransaction = isFuelPurchase(transaction);
+                if (isFuelTransaction) {
+                    pattern.fuelTransactions.push(transaction);
+                } else {
+                    pattern.nonFuelTransactions.push(transaction);
+                    pattern.nonFuelStats.count++;
+                    pattern.nonFuelStats.totalAmount += transaction.amount;
+                }
+                
                 // Weekly data
                 if (!pattern.weeklyData[weekKey]) {
-                    pattern.weeklyData[weekKey] = { transactions: 0, amount: 0, dates: [] };
+                    pattern.weeklyData[weekKey] = { transactions: 0, amount: 0, dates: [], transactionDetails: [] };
                 }
                 pattern.weeklyData[weekKey].transactions++;
                 pattern.weeklyData[weekKey].amount += transaction.amount;
                 pattern.weeklyData[weekKey].dates.push(date);
+                pattern.weeklyData[weekKey].transactionDetails.push(transaction);
                 
                 // Monthly data
                 if (!pattern.monthlyData[monthKey]) {
-                    pattern.monthlyData[monthKey] = { transactions: 0, amount: 0 };
+                    pattern.monthlyData[monthKey] = { transactions: 0, amount: 0, transactionDetails: [] };
                 }
                 pattern.monthlyData[monthKey].transactions++;
                 pattern.monthlyData[monthKey].amount += transaction.amount;
+                pattern.monthlyData[monthKey].transactionDetails.push(transaction);
                 
                 // Daily frequency
                 if (!pattern.dailyFrequency[dayKey]) {
-                    pattern.dailyFrequency[dayKey] = 0;
+                    pattern.dailyFrequency[dayKey] = [];
                 }
-                pattern.dailyFrequency[dayKey]++;
+                pattern.dailyFrequency[dayKey].push(transaction);
                 
                 // Weekly spending
                 if (!pattern.weeklySpending[weekKey]) {
-                    pattern.weeklySpending[weekKey] = 0;
+                    pattern.weeklySpending[weekKey] = { amount: 0, transactions: [] };
                 }
-                pattern.weeklySpending[weekKey] += transaction.amount;
+                pattern.weeklySpending[weekKey].amount += transaction.amount;
+                pattern.weeklySpending[weekKey].transactions.push(transaction);
             });
+            
+            // Calculate non-fuel percentage
+            pattern.nonFuelStats.percentage = pattern.totalTransactions > 0 ? 
+                (pattern.nonFuelStats.count / pattern.totalTransactions) * 100 : 0;
             
             // Calculate averages for baseline
             const weeklyTransactionCounts = Object.values(pattern.weeklyData).map(w => w.transactions);
-            const weeklySpendingAmounts = Object.values(pattern.weeklySpending);
-            const dailyFrequencyCounts = Object.values(pattern.dailyFrequency);
+            const weeklySpendingAmounts = Object.values(pattern.weeklySpending).map(w => w.amount);
+            const dailyFrequencyCounts = Object.values(pattern.dailyFrequency).map(d => d.length);
             
             pattern.averages = {
                 weeklyTransactions: weeklyTransactionCounts.reduce((a, b) => a + b, 0) / weeklyTransactionCounts.length,
@@ -798,38 +1116,612 @@
             if (weeksOfData >= config.baselinePeriod) {
                 // Check for frequency anomalies (sudden changes in daily usage)
                 Object.keys(pattern.dailyFrequency).forEach(dayKey => {
-                    const dayCount = pattern.dailyFrequency[dayKey];
+                    const dayTransactions = pattern.dailyFrequency[dayKey];
+                    const dayCount = dayTransactions.length;
                     const expectedCount = Math.round(pattern.averages.dailyFrequency);
-                    const changePercent = Math.abs((dayCount - expectedCount) / expectedCount * 100);
+                    const changePercent = Math.abs((dayCount - expectedCount) / Math.max(expectedCount, 1) * 100);
                     
                     if (changePercent > config.frequencyThreshold && dayCount > expectedCount) {
+                        const anomalyId = `freq_${cardNumber}_${dayKey}`;
                         pattern.anomalies.push({
+                            id: anomalyId,
                             type: 'frequency',
                             date: dayKey,
                             message: `Unusual frequency: ${dayCount} transactions on ${dayKey} (average: ${expectedCount.toFixed(1)})`,
-                            severity: changePercent > config.frequencyThreshold * 2 ? 'high' : 'medium'
+                            severity: changePercent > config.frequencyThreshold * 2 ? 'high' : 'medium',
+                            changePercent: changePercent,
+                            actualValue: dayCount,
+                            expectedValue: expectedCount
                         });
+                        pattern.anomalyTransactions[anomalyId] = dayTransactions;
                     }
                 });
                 
                 // Check for spending anomalies (changes in weekly spending)
                 Object.keys(pattern.weeklySpending).forEach(weekKey => {
-                    const weekSpending = pattern.weeklySpending[weekKey];
+                    const weekData = pattern.weeklySpending[weekKey];
+                    const weekSpending = weekData.amount;
                     const expectedSpending = pattern.averages.weeklySpending;
-                    const changePercent = Math.abs((weekSpending - expectedSpending) / expectedSpending * 100);
+                    const changePercent = Math.abs((weekSpending - expectedSpending) / Math.max(expectedSpending, 1) * 100);
                     
                     if (changePercent > config.spendingThreshold) {
+                        const anomalyId = `spend_${cardNumber}_${weekKey}`;
                         pattern.anomalies.push({
+                            id: anomalyId,
                             type: 'spending',
                             date: weekKey,
-                            message: `Spending anomaly: $${weekSpending.toFixed(2)} for week ${weekKey} (average: $${expectedSpending.toFixed(2)})`,
-                            severity: changePercent > config.spendingThreshold * 2 ? 'high' : 'medium'
+                            message: `Spending anomaly: ${weekSpending.toFixed(2)} for week ${weekKey} (average: ${expectedSpending.toFixed(2)})`,
+                            severity: changePercent > config.spendingThreshold * 2 ? 'high' : 'medium',
+                            changePercent: changePercent,
+                            actualValue: weekSpending,
+                            expectedValue: expectedSpending
                         });
+                        pattern.anomalyTransactions[anomalyId] = weekData.transactions;
                     }
                 });
             }
             
+            // Add non-fuel anomaly if significant non-fuel spending detected
+            if (pattern.nonFuelStats.count > 0) {
+                const nonFuelPercentage = pattern.nonFuelStats.percentage;
+                if (nonFuelPercentage > 10) { // Flag if more than 10% of transactions are non-fuel
+                    const anomalyId = `nonfuel_${cardNumber}`;
+                    pattern.anomalies.push({
+                        id: anomalyId,
+                        type: 'non-fuel',
+                        date: 'Multiple',
+                        message: `Non-fuel purchases detected: ${pattern.nonFuelStats.count} transactions (${nonFuelPercentage.toFixed(1)}%) totaling ${pattern.nonFuelStats.totalAmount.toFixed(2)}`,
+                        severity: nonFuelPercentage > 25 ? 'high' : 'medium',
+                        changePercent: nonFuelPercentage,
+                        actualValue: pattern.nonFuelStats.count,
+                        expectedValue: 0
+                    });
+                    pattern.anomalyTransactions[anomalyId] = pattern.nonFuelTransactions;
+                }
+            }
+            
             return pattern;
+        }
+        
+        // Function to detect if a transaction is fuel-related
+        function isFuelPurchase(transaction) {
+            const description = (transaction.description || '').toLowerCase();
+            const originalDescription = (transaction.originalData?.Description || '').toLowerCase();
+            const merchant = (transaction.originalData?.['Extended Details'] || '').toLowerCase();
+            
+            // Common fuel-related keywords and gas station brands
+            const fuelKeywords = [
+                // Generic fuel terms
+                'gas', 'fuel', 'gasoline', 'diesel', 'petrol', 'station',
+                'exxon', 'mobil', 'shell', 'chevron', 'bp', 'citgo', 'marathon',
+                'sunoco', 'valero', 'phillips 66', 'conoco', 'texaco', 'arco',
+                'speedway', 'wawa', 'sheetz', 'casey', 'kwik trip', 'holiday',
+                'pilot', 'flying j', 'loves', 'ta travel', 'petro',
+                'circle k', '7-eleven', 'ampm', 'quick trip', 'quiktrip',
+                'racetrac', 'racetrack', 'bucees', 'maverik', 'kum & go',
+                'murphy', 'costco gas', 'sams club gas', 'bjs gas',
+                // Truck stops and travel centers
+                'truck stop', 'travel center', 'travel plaza',
+                // Fuel card networks
+                'fleet', 'voyager', 'wright express', 'wex', 'fuelman',
+                // Gas station numbers/codes
+                'pump #', 'pump no', 'island #'
+            ];
+            
+            // Check all text fields for fuel keywords
+            const textToCheck = [description, originalDescription, merchant].join(' ');
+            
+            return fuelKeywords.some(keyword => textToCheck.includes(keyword));
+        }
+        
+        function showAnomalyDetails(cardNumber, anomalyId) {
+            const pattern = cardPatterns[cardNumber];
+            const anomaly = pattern.anomalies.find(a => a.id === anomalyId);
+            const transactions = pattern.anomalyTransactions[anomalyId] || [];
+            
+            if (!anomaly) return;
+            
+            const lastFour = cardNumber.toString().slice(-4);
+            document.getElementById('anomalyModalTitle').textContent = 
+                `Card ****${lastFour} - ${anomaly.type.toUpperCase()} Anomaly`;
+            
+            const modalContent = document.getElementById('anomalyModalContent');
+            
+            // Summary section
+            const summaryHTML = `
+                <div class="transaction-summary">
+                    <div class="summary-card">
+                        <h3>${transactions.length}</h3>
+                        <p>Transactions</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}</h3>
+                        <p>Total Amount</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${anomaly.actualValue.toFixed(anomaly.type === 'spending' ? 2 : 0)}</h3>
+                        <p>Actual ${anomaly.type === 'spending' ? 'Spending' : 'Frequency'}</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${anomaly.expectedValue.toFixed(anomaly.type === 'spending' ? 2 : 0)}</h3>
+                        <p>Expected ${anomaly.type === 'spending' ? 'Spending' : 'Frequency'}</p>
+                    </div>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                    <strong>Anomaly Details:</strong><br>
+                    ${anomaly.message}<br>
+                    <strong>Change:</strong> ${anomaly.changePercent.toFixed(1)}% ${anomaly.actualValue > anomaly.expectedValue ? 'increase' : 'decrease'}<br>
+                    <strong>Severity:</strong> <span style="color: ${anomaly.severity === 'high' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${anomaly.severity.toUpperCase()}</span>
+                </div>
+            `;
+            
+            // Transaction filters
+            const filtersHTML = `
+                <div class="transaction-filters">
+                    <div>
+                        <label>Sort by:</label>
+                        <select id="sortTransactions" onchange="updateTransactionDisplay('${anomalyId}')">
+                            <option value="date">Date</option>
+                            <option value="amount">Amount</option>
+                            <option value="description">Description</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Order:</label>
+                        <select id="sortOrder" onchange="updateTransactionDisplay('${anomalyId}')">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Min Amount:</label>
+                        <input type="number" id="minAmount" placeholder="0" onchange="updateTransactionDisplay('${anomalyId}')" step="0.01">
+                    </div>
+                </div>
+            `;
+            
+            // Store transactions for filtering
+            window.currentAnomalyTransactions = transactions;
+            window.currentAnomalyId = anomalyId;
+            
+            modalContent.innerHTML = summaryHTML + filtersHTML + '<div id="transactionTableContainer"></div>';
+            
+            // Initial display
+            updateTransactionDisplay(anomalyId);
+            
+            document.getElementById('anomalyModal').classList.add('active');
+        }
+        
+        function updateTransactionDisplay(anomalyId) {
+            const transactions = window.currentAnomalyTransactions || [];
+            const sortBy = document.getElementById('sortTransactions')?.value || 'date';
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            const minAmount = parseFloat(document.getElementById('minAmount')?.value || 0);
+            
+            // Filter transactions
+            let filteredTransactions = transactions.filter(t => t.amount >= minAmount);
+            
+            // Sort transactions
+            filteredTransactions.sort((a, b) => {
+                let valueA, valueB;
+                
+                switch (sortBy) {
+                    case 'date':
+                        valueA = a.date;
+                        valueB = b.date;
+                        break;
+                    case 'amount':
+                        valueA = a.amount;
+                        valueB = b.amount;
+                        break;
+                    case 'description':
+                        valueA = a.description.toLowerCase();
+                        valueB = b.description.toLowerCase();
+                        break;
+                    default:
+                        valueA = a.date;
+                        valueB = b.date;
+                }
+                
+                if (sortOrder === 'asc') {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+            
+            // Generate table
+            const tableHTML = `
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredTransactions.map(transaction => {
+                            const isFuel = isFuelPurchase(transaction);
+                            const typeIndicator = isFuel ? 
+                                '<span style="background: #4CAF50; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7em;">⛽ FUEL</span>' :
+                                '<span style="background: #e67e22; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7em;">🚫 NON-FUEL</span>';
+                            
+                            return `
+                                <tr style="${!isFuel ? 'background: #fff5f5;' : ''}">
+                                    <td>${typeIndicator}</td>
+                                    <td><span class="transaction-date">${transaction.date.toLocaleDateString()}</span></td>
+                                    <td><span class="transaction-amount">${transaction.amount.toFixed(2)}</span></td>
+                                    <td>${transaction.description}</td>
+                                    <td>${transaction.originalData['Reference'] || 'N/A'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('transactionTableContainer').innerHTML = tableHTML;
+        }
+        
+        function showNonFuelTransactions(cardNumber) {
+            const pattern = cardPatterns[cardNumber];
+            if (!pattern || pattern.nonFuelStats.count === 0) return;
+            
+            const lastFour = cardNumber.toString().slice(-4);
+            document.getElementById('anomalyModalTitle').textContent = 
+                `Card ****${lastFour} - Non-Fuel Transactions`;
+            
+            const modalContent = document.getElementById('anomalyModalContent');
+            const transactions = pattern.nonFuelTransactions;
+            
+            // Summary section
+            const summaryHTML = `
+                <div class="transaction-summary">
+                    <div class="summary-card">
+                        <h3>${transactions.length}</h3>
+                        <p>Non-Fuel Transactions</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}</h3>
+                        <p>Total Non-Fuel Amount</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${pattern.nonFuelStats.percentage.toFixed(1)}%</h3>
+                        <p>Of All Transactions</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${(transactions.reduce((sum, t) => sum + t.amount, 0) / transactions.length).toFixed(2)}</h3>
+                        <p>Average Amount</p>
+                    </div>
+                </div>
+                
+                <div style="background: #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e67e22;">
+                    <strong>⛽ Non-Fuel Purchase Alert:</strong><br>
+                    This card has ${transactions.length} transactions that appear to be non-fuel purchases, 
+                    representing ${pattern.nonFuelStats.percentage.toFixed(1)}% of all activity. 
+                    Review these transactions to ensure they are authorized business expenses.
+                </div>
+            `;
+            
+            // Transaction filters
+            const filtersHTML = `
+                <div class="transaction-filters">
+                    <div>
+                        <label>Sort by:</label>
+                        <select id="sortTransactions" onchange="updateNonFuelDisplay('${cardNumber}')">
+                            <option value="date">Date</option>
+                            <option value="amount">Amount</option>
+                            <option value="description">Description</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Order:</label>
+                        <select id="sortOrder" onchange="updateNonFuelDisplay('${cardNumber}')">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Min Amount:</label>
+                        <input type="number" id="minAmount" placeholder="0" onchange="updateNonFuelDisplay('${cardNumber}')" step="0.01">
+                    </div>
+                </div>
+            `;
+            
+            // Store transactions for filtering
+            window.currentNonFuelTransactions = transactions;
+            window.currentNonFuelCard = cardNumber;
+            
+            modalContent.innerHTML = summaryHTML + filtersHTML + '<div id="transactionTableContainer"></div>';
+            
+            // Initial display
+            updateNonFuelDisplay(cardNumber);
+            
+            document.getElementById('anomalyModal').classList.add('active');
+        }
+        
+        function updateNonFuelDisplay(cardNumber) {
+            const transactions = window.currentNonFuelTransactions || [];
+            const sortBy = document.getElementById('sortTransactions')?.value || 'date';
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            const minAmount = parseFloat(document.getElementById('minAmount')?.value || 0);
+            
+            // Filter transactions
+            let filteredTransactions = transactions.filter(t => t.amount >= minAmount);
+            
+            // Sort transactions
+            filteredTransactions.sort((a, b) => {
+                let valueA, valueB;
+                
+                switch (sortBy) {
+                    case 'date':
+                        valueA = a.date;
+                        valueB = b.date;
+                        break;
+                    case 'amount':
+                        valueA = a.amount;
+                        valueB = b.amount;
+                        break;
+                    case 'description':
+                        valueA = a.description.toLowerCase();
+                        valueB = b.description.toLowerCase();
+                        break;
+                    default:
+                        valueA = a.date;
+                        valueB = b.date;
+                }
+                
+                if (sortOrder === 'asc') {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+            
+            // Generate table with merchant analysis
+            const tableHTML = `
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>⚠️ Alert</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Merchant Category</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredTransactions.map(transaction => {
+                            const merchantCategory = categorizeMerchant(transaction);
+                            return `
+                                <tr style="background: #fff5f5;">
+                                    <td><span style="background: #e67e22; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7em;">🚫 NON-FUEL</span></td>
+                                    <td><span class="transaction-date">${transaction.date.toLocaleDateString()}</span></td>
+                                    <td><span class="transaction-amount">${transaction.amount.toFixed(2)}</span></td>
+                                    <td style="max-width: 200px; word-wrap: break-word;">${transaction.description}</td>
+                                    <td><span style="background: ${merchantCategory.color}; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.8em;">${merchantCategory.category}</span></td>
+                                    <td>${transaction.originalData['Reference'] || 'N/A'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9ff; border-radius: 8px;">
+                    <h4 style="color: #2196F3; margin-bottom: 10px;">💡 Analysis Tips:</h4>
+                    <ul style="color: #666; line-height: 1.6;">
+                        <li>🔍 <strong>Review Merchant Categories:</strong> Look for patterns in non-fuel spending</li>
+                        <li>📅 <strong>Check Dates:</strong> Identify if non-fuel purchases occur on specific days/times</li>
+                        <li>💰 <strong>Monitor Amounts:</strong> Large non-fuel transactions may need additional scrutiny</li>
+                        <li>👤 <strong>Verify Authorization:</strong> Ensure all non-fuel purchases are legitimate business expenses</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('transactionTableContainer').innerHTML = tableHTML;
+        }
+        
+        // Function to categorize merchants for better analysis
+        function categorizeMerchant(transaction) {
+            const description = (transaction.description || '').toLowerCase();
+            const originalDescription = (transaction.originalData?.Description || '').toLowerCase();
+            const merchant = (transaction.originalData?.['Extended Details'] || '').toLowerCase();
+            
+            const textToCheck = [description, originalDescription, merchant].join(' ');
+            
+            // Define merchant categories with colors
+            const categories = [
+                {
+                    category: 'RESTAURANT',
+                    color: '#e74c3c',
+                    keywords: ['restaurant', 'food', 'dining', 'cafe', 'coffee', 'pizza', 'burger', 'taco', 'subway', 'mcdonalds', 'kfc', 'wendys', 'starbucks', 'dunkin']
+                },
+                {
+                    category: 'RETAIL',
+                    color: '#9b59b6',
+                    keywords: ['walmart', 'target', 'amazon', 'store', 'shop', 'retail', 'mall', 'market', 'grocery', 'supermarket']
+                },
+                {
+                    category: 'AUTOMOTIVE',
+                    color: '#3498db',
+                    keywords: ['auto', 'car', 'tire', 'repair', 'service', 'parts', 'mechanic', 'oil change', 'brake', 'automotive']
+                },
+                {
+                    category: 'HOTEL/TRAVEL',
+                    color: '#1abc9c',
+                    keywords: ['hotel', 'motel', 'inn', 'travel', 'airline', 'airport', 'flight', 'booking', 'resort', 'lodge']
+                },
+                {
+                    category: 'CONVENIENCE',
+                    color: '#f39c12',
+                    keywords: ['convenience', 'corner', 'quick', 'mini mart', 'bodega', 'variety']
+                },
+                {
+                    category: 'ENTERTAINMENT',
+                    color: '#e67e22',
+                    keywords: ['movie', 'theater', 'cinema', 'game', 'entertainment', 'amusement', 'recreation']
+                },
+                {
+                    category: 'OFFICE/SUPPLIES',
+                    color: '#34495e',
+                    keywords: ['office', 'supply', 'depot', 'staples', 'fedex', 'ups', 'print', 'copy']
+                },
+                {
+                    category: 'ATM/CASH',
+                    color: '#95a5a6',
+                    keywords: ['atm', 'cash', 'withdrawal', 'advance']
+                }
+            ];
+            
+            // Check each category
+            for (const cat of categories) {
+                if (cat.keywords.some(keyword => textToCheck.includes(keyword))) {
+                    return cat;
+                }
+            }
+            
+            // Default category for unrecognized merchants
+            return {
+                category: 'OTHER',
+                color: '#7f8c8d'
+            };
+        }
+        
+        function showCardDetails(cardNumber) {
+            const pattern = cardPatterns[cardNumber];
+            if (!pattern) return;
+            
+            const lastFour = cardNumber.toString().slice(-4);
+            document.getElementById('cardModalTitle').textContent = `Card ****${lastFour} - Detailed Analysis`;
+            
+            const transactions = transactionsByCard[cardNumber] || [];
+            const modalContent = document.getElementById('cardModalContent');
+            
+            // Card summary with non-fuel alert
+            const summaryHTML = `
+                <div class="transaction-summary">
+                    <div class="summary-card">
+                        <h3>${pattern.totalTransactions}</h3>
+                        <p>Total Transactions</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${pattern.totalAmount.toFixed(2)}</h3>
+                        <p>Total Amount</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${pattern.anomalies.length}</h3>
+                        <p>Anomalies Detected</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>${Math.ceil((pattern.dateRange.end - pattern.dateRange.start) / (1000 * 60 * 60 * 24))}</h3>
+                        <p>Days Active</p>
+                    </div>
+                </div>
+                
+                ${pattern.nonFuelStats.count > 0 ? `
+                <div style="background: #ffeaa7; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #e67e22;">
+                    <h3 style="color: #d63031; margin: 0 0 10px 0;">⛽ Non-Fuel Purchase Alert</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #d63031;">${pattern.nonFuelStats.count}</div>
+                            <div style="color: #666;">Non-Fuel Transactions</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #d63031;">${pattern.nonFuelStats.totalAmount.toFixed(2)}</div>
+                            <div style="color: #666;">Non-Fuel Amount</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #d63031;">${pattern.nonFuelStats.percentage.toFixed(1)}%</div>
+                            <div style="color: #666;">Of All Transactions</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <button onclick="showNonFuelTransactions('${cardNumber}')" style="background: #d63031; color: white; padding: 8px 16px; border: none; border-radius: 20px; cursor: pointer;">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Period breakdown
+            const weeklyPeriods = Object.keys(pattern.weeklyData);
+            const monthlyPeriods = Object.keys(pattern.monthlyData);
+            
+            const periodHTML = `
+                <div class="period-breakdown">
+                    <div class="period-card">
+                        <h4>Weekly Pattern</h4>
+                        <div class="period-stats">
+                            <div class="period-stat">
+                                <div class="value">${weeklyPeriods.length}</div>
+                                <div class="label">Weeks</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${(pattern.totalTransactions / weeklyPeriods.length).toFixed(1)}</div>
+                                <div class="label">Avg/Week</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${(pattern.totalAmount / weeklyPeriods.length).toFixed(0)}</div>
+                                <div class="label">Avg Spending</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${pattern.averages.dailyFrequency.toFixed(1)}</div>
+                                <div class="label">Daily Avg</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="period-card">
+                        <h4>Monthly Pattern</h4>
+                        <div class="period-stats">
+                            <div class="period-stat">
+                                <div class="value">${monthlyPeriods.length}</div>
+                                <div class="label">Months</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${(pattern.totalTransactions / monthlyPeriods.length).toFixed(1)}</div>
+                                <div class="label">Avg/Month</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${(pattern.totalAmount / monthlyPeriods.length).toFixed(0)}</div>
+                                <div class="label">Avg Spending</div>
+                            </div>
+                            <div class="period-stat">
+                                <div class="value">${(pattern.totalTransactions / Math.ceil((pattern.dateRange.end - pattern.dateRange.start) / (1000 * 60 * 60 * 24))).toFixed(2)}</div>
+                                <div class="label">Trans/Day</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Anomalies list
+            const anomaliesHTML = pattern.anomalies.length > 0 ? `
+                <h3 style="color: #e74c3c; margin: 30px 0 15px 0;">Detected Anomalies</h3>
+                <div style="background: #fff5f5; padding: 20px; border-radius: 12px; border-left: 4px solid #e74c3c;">
+                    ${pattern.anomalies.map(anomaly => `
+                        <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; cursor: pointer;" 
+                             onclick="showAnomalyDetails('${cardNumber}', '${anomaly.id}')">
+                            <div style="font-weight: bold; color: #e74c3c;">${anomaly.type.toUpperCase()} - ${anomaly.severity.toUpperCase()}</div>
+                            <div style="color: #666; margin-top: 5px;">${anomaly.message}</div>
+                            <div style="font-size: 0.8em; color: #999; margin-top: 5px;">Click to view transaction details</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : `
+                <div style="background: #f0f8f0; padding: 20px; border-radius: 12px; border-left: 4px solid #4CAF50; margin-top: 30px;">
+                    <h3 style="color: #4CAF50; margin: 0 0 10px 0;">✓ No Anomalies Detected</h3>
+                    <p style="color: #666; margin: 0;">This card shows consistent usage patterns with no significant deviations.</p>
+                </div>
+            `;
+            
+            modalContent.innerHTML = summaryHTML + periodHTML + anomaliesHTML;
+            document.getElementById('cardModal').classList.add('active');
         }
         
         function getWeekKey(date) {
@@ -905,10 +1797,12 @@
                 if (filterAnomalies !== 'all') {
                     const hasAnomalies = pattern.anomalies.length > 0;
                     const hasHighSeverity = pattern.anomalies.some(a => a.severity === 'high');
+                    const hasNonFuel = pattern.nonFuelStats.count > 0;
                     
                     if (filterAnomalies === 'withAnomalies' && !hasAnomalies) return false;
                     if (filterAnomalies === 'noAnomalies' && hasAnomalies) return false;
                     if (filterAnomalies === 'highSeverity' && !hasHighSeverity) return false;
+                    if (filterAnomalies === 'nonFuel' && !hasNonFuel) return false;
                 }
                 
                 // Spending filter
@@ -970,13 +1864,21 @@
                 
                 const hasAnomalies = pattern.anomalies.length > 0;
                 const hasHighSeverity = pattern.anomalies.some(a => a.severity === 'high');
+                const hasNonFuel = pattern.nonFuelStats.count > 0;
                 const anomalyClass = hasAnomalies ? 'has-anomalies' : 'no-anomalies';
                 
+                // Add non-fuel indicator to card display
+                const nonFuelIndicator = hasNonFuel ? 
+                    `<div style="position: absolute; top: 50px; right: 15px; background: #e67e22; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7em;">
+                        ⛽ ${pattern.nonFuelStats.count} Non-Fuel
+                    </div>` : '';
+                
                 cardHTML += `
-                    <div class="card-summary ${anomalyClass}">
+                    <div class="card-summary ${anomalyClass}" onclick="showCardDetails('${pattern.cardNumber}')">
                         <div class="anomaly-indicator ${hasAnomalies ? (hasHighSeverity ? '' : 'medium') : 'none'}">
                             ${hasAnomalies ? `${pattern.anomalies.length} Alert${pattern.anomalies.length > 1 ? 's' : ''}` : '✓ Clean'}
                         </div>
+                        ${nonFuelIndicator}
                         <div class="card-number">Card ****${lastFour}</div>
                         <div class="card-stats">
                             <div class="stat-item">
@@ -995,6 +1897,9 @@
                                 <div class="stat-value">${avgAmount.toFixed(0)}</div>
                                 <div class="stat-label">Avg ${currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1)} Spending</div>
                             </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 0.8em; color: #666;">
+                            Click to view details
                         </div>
                     </div>
                 `;
@@ -1015,10 +1920,15 @@
                     
                     pattern.anomalies.forEach(anomaly => {
                         anomaliesHTML += `
-                            <div class="anomaly-card">
+                            <div class="anomaly-card" onclick="showAnomalyDetails('${pattern.cardNumber}', '${anomaly.id}')">
+                                <div class="click-hint">Click for details</div>
                                 <div class="anomaly-type ${anomaly.type}">${anomaly.type.toUpperCase()}</div>
                                 <div class="anomaly-title">Card ****${lastFour} - ${anomaly.severity.toUpperCase()} ALERT</div>
-                                <div class="anomaly-details">${anomaly.message}</div>
+                                <div class="anomaly-details">
+                                    ${anomaly.message}
+                                    <br><strong>Change:</strong> ${anomaly.changePercent.toFixed(1)}% ${anomaly.actualValue > anomaly.expectedValue ? 'increase' : 'decrease'}
+                                    <br><em>Click to see the ${pattern.anomalyTransactions[anomaly.id]?.length || 0} underlying transactions</em>
+                                </div>
                             </div>
                         `;
                     });
@@ -1043,7 +1953,7 @@
         
         function resetFilters() {
             document.getElementById('sortBy').value = 'totalTransactions';
-            selectAllCards(true);
+            document.getElementById('filterByCard').value = 'all';
             document.getElementById('filterAnomalies').value = 'all';
             document.getElementById('spendingRange').value = '0';
             updateSpendingLabel();
@@ -1066,12 +1976,18 @@
             Object.values(cardPatterns).forEach(pattern => {
                 const lastFour = pattern.cardNumber.toString().slice(-4);
                 pattern.anomalies.forEach(anomaly => {
+                    const transactions = pattern.anomalyTransactions[anomaly.id] || [];
                     exportData.push({
                         'Card': `****${lastFour}`,
                         'Type': anomaly.type,
                         'Severity': anomaly.severity,
                         'Date': anomaly.date,
-                        'Details': anomaly.message
+                        'Details': anomaly.message,
+                        'Change %': anomaly.changePercent.toFixed(1),
+                        'Actual Value': anomaly.actualValue,
+                        'Expected Value': anomaly.expectedValue,
+                        'Transaction Count': transactions.length,
+                        'Total Amount': transactions.reduce((sum, t) => sum + t.amount, 0).toFixed(2)
                     });
                 });
             });
@@ -1102,7 +2018,11 @@
                     'Avg Weekly Spending': weeklyPeriods > 0 ? (pattern.totalAmount / weeklyPeriods).toFixed(2) : 0,
                     'Avg Monthly Transactions': monthlyPeriods > 0 ? (pattern.totalTransactions / monthlyPeriods).toFixed(1) : 0,
                     'Avg Monthly Spending': monthlyPeriods > 0 ? (pattern.totalAmount / monthlyPeriods).toFixed(2) : 0,
-                    'Anomalies Count': pattern.anomalies.length
+                    'Anomalies Count': pattern.anomalies.length,
+                    'High Severity Anomalies': pattern.anomalies.filter(a => a.severity === 'high').length,
+                    'Non-Fuel Transactions': pattern.nonFuelStats.count,
+                    'Non-Fuel Amount': pattern.nonFuelStats.totalAmount.toFixed(2),
+                    'Non-Fuel Percentage': pattern.nonFuelStats.percentage.toFixed(1) + '%'
                 });
             });
             
@@ -1120,249 +2040,6 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }
-        
-        // Historical data management functions
-        function saveHistoricalData() {
-            const currentDate = new Date().toISOString().split('T')[0];
-            
-            // Update historical data with current analysis
-            Object.values(cardPatterns).forEach(pattern => {
-                if (!historicalData[pattern.cardNumber]) {
-                    historicalData[pattern.cardNumber] = {
-                        cardNumber: pattern.cardNumber,
-                        firstSeen: currentDate,
-                        analysisCount: 0,
-                        averages: pattern.averages,
-                        monthlyHistory: {},
-                        anomalyHistory: [],
-                        weeklyHistory: {}
-                    };
-                }
-                
-                const historical = historicalData[pattern.cardNumber];
-                historical.lastSeen = currentDate;
-                historical.analysisCount++;
-                
-                // Update rolling averages (weighted average with previous data)
-                const weight = Math.min(historical.analysisCount, 10) / 10; // Give more weight to recent data
-                historical.averages = {
-                    weeklyTransactions: (historical.averages.weeklyTransactions * (1 - weight)) + (pattern.averages.weeklyTransactions * weight),
-                    weeklySpending: (historical.averages.weeklySpending * (1 - weight)) + (pattern.averages.weeklySpending * weight),
-                    dailyFrequency: (historical.averages.dailyFrequency * (1 - weight)) + (pattern.averages.dailyFrequency * weight)
-                };
-                
-                // Store weekly data (will be cleaned up to 12 weeks)
-                Object.keys(pattern.weeklyData).forEach(weekKey => {
-                    historical.weeklyHistory[weekKey] = {
-                        transactions: pattern.weeklyData[weekKey].transactions,
-                        amount: pattern.weeklyData[weekKey].amount,
-                        date: currentDate
-                    };
-                });
-                
-                // Store monthly summary
-                const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
-                historical.monthlyHistory[currentMonth] = {
-                    totalTransactions: pattern.totalTransactions,
-                    totalAmount: pattern.totalAmount,
-                    anomalyCount: pattern.anomalies.length,
-                    dateRange: pattern.dateRange
-                };
-                
-                // Store significant anomalies
-                pattern.anomalies.forEach(anomaly => {
-                    if (anomaly.severity === 'high') {
-                        historical.anomalyHistory.push({
-                            date: currentDate,
-                            type: anomaly.type,
-                            message: anomaly.message,
-                            severity: anomaly.severity
-                        });
-                    }
-                });
-            });
-            
-            // Clean up old data (keep only last 12 weeks)
-            cleanupOldData();
-            
-            // Auto-save to local storage
-            try {
-                localStorage.setItem('amexHistoricalData', JSON.stringify({
-                    lastUpdated: currentDate,
-                    version: '1.0',
-                    data: historicalData
-                }));
-            } catch (e) {
-                // Local storage not available or full
-            }
-        }
-        
-        function cleanupOldData() {
-            const twelveWeeksAgo = new Date();
-            twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - (12 * 7)); // 12 weeks ago
-            const cutoffDate = twelveWeeksAgo.toISOString().split('T')[0];
-            const cutoffWeek = getWeekKey(twelveWeeksAgo);
-            
-            Object.keys(historicalData).forEach(cardNumber => {
-                const historical = historicalData[cardNumber];
-                
-                // Clean weekly history - keep only last 12 weeks
-                if (historical.weeklyHistory) {
-                    Object.keys(historical.weeklyHistory).forEach(weekKey => {
-                        if (weekKey < cutoffWeek) {
-                            delete historical.weeklyHistory[weekKey];
-                        }
-                    });
-                }
-                
-                // Clean monthly history - keep only last 3 months (covers 12+ weeks)
-                if (historical.monthlyHistory) {
-                    const threeMonthsAgo = new Date();
-                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-                    const cutoffMonth = threeMonthsAgo.toISOString().substring(0, 7);
-                    
-                    Object.keys(historical.monthlyHistory).forEach(monthKey => {
-                        if (monthKey < cutoffMonth) {
-                            delete historical.monthlyHistory[monthKey];
-                        }
-                    });
-                }
-                
-                // Clean anomaly history - keep only last 12 weeks
-                if (historical.anomalyHistory) {
-                    historical.anomalyHistory = historical.anomalyHistory.filter(anomaly => 
-                        anomaly.date >= cutoffDate
-                    );
-                }
-                
-                // Update firstSeen if all data was cleaned up
-                if (historical.weeklyHistory && Object.keys(historical.weeklyHistory).length === 0) {
-                    historical.firstSeen = new Date().toISOString().split('T')[0];
-                }
-            });
-            
-            // Remove cards with no recent data (no activity in 12 weeks)
-            Object.keys(historicalData).forEach(cardNumber => {
-                const historical = historicalData[cardNumber];
-                if (historical.lastSeen < cutoffDate) {
-                    delete historicalData[cardNumber];
-                }
-            });
-        }
-        
-        function loadHistoricalData() {
-            try {
-                const saved = localStorage.getItem('amexHistoricalData');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    historicalData = parsed.data || {};
-                    
-                    // Show historical data indicator if available
-                    const cardCount = Object.keys(historicalData).length;
-                    if (cardCount > 0) {
-                        const indicator = document.createElement('div');
-                        indicator.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #4CAF50; color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; z-index: 1001;';
-                        indicator.textContent = `📊 ${cardCount} cards historical data loaded`;
-                        document.body.appendChild(indicator);
-                        setTimeout(() => indicator.remove(), 5000);
-                    }
-                }
-            } catch (e) {
-                historicalData = {};
-            }
-        }
-        
-        function exportHistoricalData() {
-            if (Object.keys(historicalData).length === 0) {
-                alert('No historical data to export. Process some transactions first.');
-                return;
-            }
-            
-            const exportData = {
-                exportDate: new Date().toISOString(),
-                version: '1.0',
-                cardCount: Object.keys(historicalData).length,
-                data: historicalData
-            };
-            
-            const jsonString = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `amex-historical-data-${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-        
-        function importHistoricalData() {
-            document.getElementById('historicalFileInput').click();
-        }
-        
-        function handleHistoricalImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    
-                    if (imported.data && typeof imported.data === 'object') {
-                        // Merge with existing data
-                        const existingCards = Object.keys(historicalData).length;
-                        
-                        Object.keys(imported.data).forEach(cardNumber => {
-                            if (!historicalData[cardNumber]) {
-                                historicalData[cardNumber] = imported.data[cardNumber];
-                            } else {
-                                // Merge historical data intelligently
-                                const existing = historicalData[cardNumber];
-                                const incoming = imported.data[cardNumber];
-                                
-                                existing.analysisCount = Math.max(existing.analysisCount, incoming.analysisCount);
-                                existing.firstSeen = existing.firstSeen < incoming.firstSeen ? existing.firstSeen : incoming.firstSeen;
-                                existing.lastSeen = existing.lastSeen > incoming.lastSeen ? existing.lastSeen : incoming.lastSeen;
-                                
-                                // Merge monthly history
-                                Object.assign(existing.monthlyHistory, incoming.monthlyHistory);
-                                
-                                // Merge anomaly history
-                                existing.anomalyHistory = [...existing.anomalyHistory, ...incoming.anomalyHistory]
-                                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                                    .slice(-50); // Keep latest 50
-                            }
-                        });
-                        
-                        // Save merged data
-                        try {
-                            localStorage.setItem('amexHistoricalData', JSON.stringify({
-                                lastUpdated: new Date().toISOString().split('T')[0],
-                                version: '1.0',
-                                data: historicalData
-                            }));
-                        } catch (e) {
-                            // Local storage not available
-                        }
-                        
-                        const newCards = Object.keys(historicalData).length;
-                        alert(`Historical data imported successfully!\nCards before: ${existingCards}\nCards after: ${newCards}`);
-                        
-                    } else {
-                        alert('Invalid historical data file format.');
-                    }
-                    
-                } catch (error) {
-                    alert('Error importing historical data: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset file input
-            event.target.value = '';
         }
     </script>
 </body>
